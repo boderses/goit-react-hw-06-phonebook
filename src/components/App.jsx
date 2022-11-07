@@ -1,18 +1,24 @@
-import { React, Component } from 'react';
+import { useState, useEffect } from 'react';
 import { nanoid } from 'nanoid';
 import PhonebookForm from './PhonebookForm/PhonebookForm';
 import PhonebookFilter from './PhonebookFilter/PhonebookFilter';
 import PhonebookList from './PhonebookList/PhonebookList';
 import { StyledContainer } from './App.styled.js';
 
-class App extends Component {
-  state = {
-    contacts: [],
-    filter: '',
-  };
+const App = () => {
+  const [contacts, setContacts] = useState(() =>
+    JSON.parse(window.localStorage.getItem('contacts'))
+      ? JSON.parse(window.localStorage.getItem('contacts'))
+      : []
+  );
+  const [filter, setFilter] = useState('');
 
-  addContact = ({ name, number }) => {
-    if (this.state.contacts.find(contact => contact.name === name)) {
+  useEffect(() => {
+    window.localStorage.setItem('contacts', JSON.stringify(contacts));
+  }, [contacts]);
+
+  const addContact = ({ name, number }) => {
+    if (contacts.find(contact => contact.name === name)) {
       alert(`${name} is already in contacts`);
       return;
     }
@@ -23,55 +29,33 @@ class App extends Component {
       number,
     };
 
-    this.setState(prevStat => ({
-      contacts: [newContact, ...prevStat.contacts],
-    }));
+    setContacts(prevState => [newContact, ...prevState]);
   };
 
-  findContact = searchName => {
-    this.setState({ filter: searchName });
+  const findContact = searchName => {
+    setFilter(searchName);
   };
 
-  deleteContact = contactId => {
-    this.setState(prevState => ({
-      contacts: prevState.contacts.filter(contact => contact.id !== contactId),
-    }));
-  };
-
-  componentDidMount() {
-    const contactsInLocalStorage = JSON.parse(localStorage.getItem('contacts'));
-    if (contactsInLocalStorage)
-      this.setState({ contacts: contactsInLocalStorage });
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    console.log('App component was update');
-    if (this.state.contacts !== prevState.contacts)
-      localStorage.setItem('contacts', JSON.stringify(this.state.contacts));
-  }
-
-  render() {
-    const normalizedFilter = this.state.filter.toLowerCase();
-    const visibleContacts = this.state.contacts.filter(contact =>
-      contact.name.toLowerCase().includes(normalizedFilter)
+  const deleteContact = contactId => {
+    setContacts(prevState =>
+      prevState.filter(contact => contact.id !== contactId)
     );
+  };
 
-    return (
-      <StyledContainer>
-        <h1>Phonebook</h1>
-        <PhonebookForm onSubmit={this.addContact} />
-        <h2>Contacts</h2>
-        <PhonebookFilter
-          value={this.state.filter}
-          onSearch={this.findContact}
-        />
-        <PhonebookList
-          contacts={visibleContacts}
-          onDelete={this.deleteContact}
-        />
-      </StyledContainer>
-    );
-  }
-}
+  const normalizedFilter = filter.toLowerCase();
+  const visibleContacts = contacts.filter(contact =>
+    contact.name.toLowerCase().includes(normalizedFilter)
+  );
+
+  return (
+    <StyledContainer>
+      <h1>Phonebook</h1>
+      <PhonebookForm onSubmit={addContact} />
+      <h2>Contacts</h2>
+      <PhonebookFilter value={filter} onSearch={findContact} />
+      <PhonebookList contacts={visibleContacts} onDelete={deleteContact} />
+    </StyledContainer>
+  );
+};
 
 export default App;
