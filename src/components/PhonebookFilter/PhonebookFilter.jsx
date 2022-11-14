@@ -1,11 +1,12 @@
 import PropTypes from 'prop-types';
 import { React } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { changeFilter } from '../../redux/reducers';
 import { FilterForm, FilterInput } from './PhonebookFilter.styled';
 
-const PhonebookFilter = ({ value, onSearch }) => {
-  const handleSearch = event => {
-    onSearch(event.currentTarget.value);
-  };
+const PhonebookFilter = () => {
+  const getFilter = useSelector(state => state.contacts.filter);
+  const dispatch = useDispatch();
   return (
     <FilterForm>
       <label>
@@ -13,10 +14,9 @@ const PhonebookFilter = ({ value, onSearch }) => {
         <br />
         <FilterInput
           type="text"
-          name="search"
-          value={value}
-          onChange={handleSearch}
-        ></FilterInput>
+          value={getFilter}
+          onChange={event => dispatch(changeFilter(event.currentTarget.value))}
+        />
       </label>
     </FilterForm>
   );
@@ -25,6 +25,6 @@ const PhonebookFilter = ({ value, onSearch }) => {
 export default PhonebookFilter;
 
 PhonebookFilter.propTypes = {
-  value: PropTypes.string.isRequired,
-  onSearch: PropTypes.func.isRequired,
+  value: PropTypes.string,
+  onSearch: PropTypes.func,
 };

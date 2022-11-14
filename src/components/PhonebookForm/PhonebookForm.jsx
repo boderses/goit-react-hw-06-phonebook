@@ -1,6 +1,8 @@
 import PropTypes from 'prop-types';
 import { useState } from 'react';
-
+import { useSelector, useDispatch } from 'react-redux';
+import { createContact } from '../../redux/reducers';
+import { nanoid } from 'nanoid';
 import {
   ContactAddForm,
   LableForm,
@@ -8,15 +10,37 @@ import {
   ButtonForm,
 } from './PhonebookForm.styled';
 
-const PhonebookForm = ({ onSubmit }) => {
+const PhonebookForm = () => {
   const [name, setName] = useState('');
   const [number, setNumber] = useState('');
+  const contacts = useSelector(state => state.contacts.contacts);
+  const dispatch = useDispatch();
 
   const handleSubmit = event => {
     event.preventDefault();
-    onSubmit({ name, number });
+    formSubmitHandler(name, number);
     setName('');
     setNumber('');
+  };
+
+  const formSubmitHandler = (name, number) => {
+    if (
+      contacts.find(
+        contact => contact.name.toLowerCase() === name.toLowerCase()
+      )
+    ) {
+      return alert(`${name} is already in contacts.`);
+    }
+    if (contacts.find(contact => contact.number === number)) {
+      return alert(`${number} is already in contacts.`);
+    }
+    const newContact = {
+      id: nanoid(),
+      name,
+      number,
+    };
+
+    dispatch(createContact(newContact));
   };
 
   return (
@@ -56,5 +80,5 @@ const PhonebookForm = ({ onSubmit }) => {
 export default PhonebookForm;
 
 PhonebookForm.propTypes = {
-  onSubmit: PropTypes.func.isRequired,
+  onSubmit: PropTypes.func,
 };
